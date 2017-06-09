@@ -1,8 +1,3 @@
-# Tetromino (a Tetris clone)
-# By Al Sweigart al@inventwithpython.com
-# http://inventwithpython.com/pygame
-# Released under a "Simplified BSD" license
-
 import random, time, pygame, sys
 from pygame.locals import *
 
@@ -34,9 +29,9 @@ YELLOW      = (155, 155,   0)
 LIGHTYELLOW = (175, 175,  20)
 
 BORDERCOLOR = BLUE
-BGCOLOR = BLACK
+BGCOLOR = GRAY
 TEXTCOLOR = WHITE
-TEXTSHADOWCOLOR = GRAY
+TEXTSHADOWCOLOR = BLACK
 COLORS      = (     BLUE,      GREEN,      RED,      YELLOW)
 LIGHTCOLORS = (LIGHTBLUE, LIGHTGREEN, LIGHTRED, LIGHTYELLOW)
 assert len(COLORS) == len(LIGHTCOLORS) # each color must have light color
@@ -145,6 +140,7 @@ T_SHAPE_TEMPLATE = [['.....',
                      '.OO..',
                      '..O..',
                      '.....']]
+                     
 
 PIECES = {'S': S_SHAPE_TEMPLATE,
           'Z': Z_SHAPE_TEMPLATE,
@@ -190,7 +186,7 @@ def runGame():
 
     fallingPiece = getNewPiece()
     nextPiece = getNewPiece()
-
+    DISPLAYSURF.fill(BGCOLOR)
     while True: # game loop
         if fallingPiece == None:
             # No falling piece in play, so start a new piece at the top
@@ -200,13 +196,13 @@ def runGame():
 
             if not isValidPosition(board, fallingPiece):
                 return # can't fit a new piece on the board, so game over
-
+        
         checkForQuit()
         for event in pygame.event.get(): # event handling loop
             if event.type == KEYUP:
                 if (event.key == K_p):
                     # Pausing the game
-                    DISPLAYSURF.fill(BGCOLOR)
+                    
                     pygame.mixer.music.stop()
                     showTextScreen('Paused') # pause until a key press
                     pygame.mixer.music.play(-1, 0.0)
@@ -219,6 +215,8 @@ def runGame():
                     movingRight = False
                 elif (event.key == K_DOWN or event.key == K_s):
                     movingDown = False
+                elif (event.type == K_o):
+                    DISPLAYSURF.fill((185-2*score, 185-2*score, 185-2*score))
 
             elif event.type == KEYDOWN:
                 # moving the piece sideways
@@ -335,7 +333,7 @@ def showTextScreen(text):
     DISPLAYSURF.blit(titleSurf, titleRect)
 
     # Draw the additional "Press a key to play." text.
-    pressKeySurf, pressKeyRect = makeTextObjs('Press a key to play.', BASICFONT, TEXTCOLOR)
+    pressKeySurf, pressKeyRect = makeTextObjs('Press a key to play.', BASICFONT, BLACK)
     pressKeyRect.center = (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2) + 100)
     DISPLAYSURF.blit(pressKeySurf, pressKeyRect)
 
@@ -354,11 +352,11 @@ def checkForQuit():
 
 
 def calculateLevelAndFallFreq(score):
-    # Based on the score, return the level the player is on and
-    # how many seconds pass until a falling piece falls one space.
     level = int(score / 10) + 1
     fallFreq = 0.27 - (level * 0.02)
+    # 레벨이 올라갈수록 떨어지는 속도가 빨라짐 
     return level, fallFreq
+
 
 def getNewPiece():
     # return a random new piece in a random rotation and color
@@ -435,16 +433,10 @@ def removeCompleteLines(board):
 
 
 def convertToPixelCoords(boxx, boxy):
-    # Convert the given xy coordinates of the board to xy
-    # coordinates of the location on the screen.
     return (XMARGIN + (boxx * BOXSIZE)), (TOPMARGIN + (boxy * BOXSIZE))
 
 
 def drawBox(boxx, boxy, color, pixelx=None, pixely=None):
-    # draw a single box (each tetromino piece has four boxes)
-    # at xy coordinates on the board. Or, if pixelx & pixely
-    # are specified, draw to the pixel coordinates stored in
-    # pixelx & pixely (this is used for the "Next" piece).
     if color == BLANK:
         return
     if pixelx == None and pixely == None:
@@ -502,5 +494,10 @@ def drawNextPiece(piece):
     drawPiece(piece, pixelx=WINDOWWIDTH-120, pixely=100)
 
 
+def milivogi(piece):
+    pass
+
+def one_to_one():
+    pass
 if __name__ == '__main__':
     main()
