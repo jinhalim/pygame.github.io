@@ -150,6 +150,7 @@ PIECES = {'S': S_SHAPE_TEMPLATE,
           'O': O_SHAPE_TEMPLATE,
           'T': T_SHAPE_TEMPLATE}
 
+bg_image = pygame.image.load("bgimg.png")
 
 def main():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
@@ -158,8 +159,11 @@ def main():
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
     BIGFONT = pygame.font.Font('freesansbold.ttf', 100)
+    mousex = 0
+    mousey = 0
+    
     pygame.display.set_caption('Tetromino')
-
+    DISPLAYSURF.blit(bg_image,[0,0])
     showTextScreen('Tetromino')
     while True: # game loop
         # if random.randint(0, 1) == 0:
@@ -169,6 +173,7 @@ def main():
         # pygame.mixer.music.play(-1, 0.0)
         runGame()
         # pygame.mixer.music.stop()
+        DISPLAYSURF.blit(bg_image,[0,0])
         showTextScreen('Game Over')
 
 
@@ -186,7 +191,8 @@ def runGame():
 
     fallingPiece = getNewPiece()
     nextPiece = getNewPiece()
-    DISPLAYSURF.fill(BGCOLOR)
+    DISPLAYSURF.blit(bg_image,[0,0])
+    # DISPLAYSURF.fill(BGCOLOR)
     while True: # game loop
         if fallingPiece == None:
             # No falling piece in play, so start a new piece at the top
@@ -215,8 +221,6 @@ def runGame():
                     movingRight = False
                 elif (event.key == K_DOWN or event.key == K_s):
                     movingDown = False
-                elif (event.type == K_o):
-                    DISPLAYSURF.fill((185-2*score, 185-2*score, 185-2*score))
 
             elif event.type == KEYDOWN:
                 # moving the piece sideways
@@ -286,7 +290,8 @@ def runGame():
                 lastFallTime = time.time()
 
         # drawing everything on the screen
-        DISPLAYSURF.fill(BGCOLOR)
+        # DISPLAYSURF.fill(BGCOLOR)
+        DISPLAYSURF.blit(bg_image,[0,0])
         drawBoard(board)
         drawStatus(score, level)
         drawNextPiece(nextPiece)
@@ -296,6 +301,21 @@ def runGame():
         pygame.display.update()
         FPSCLOCK.tick(FPS)
 
+
+def coverBoxesAnimation(board, boxesToCover):
+    for coverage in range(0, BOXSIZE + REVEALSPEED, REVEALSPEED):
+        drawBoxCovers(board, boxesToCover, coverage)
+
+
+def drawBoard(board, revealed):
+    for boxx in range(BOARDWIDTH):
+        for boxy in range(BOARDHEIGHT):
+            left, top = leftTopCoordsOfBox(boxx, boxy)
+            if not revealed[boxx][boxy]:
+                pygame.draw.rect(DISPLAYSURF, BOXCOLOR, (left, top, BOXSIZE, BOXSIZE))
+            else:
+                shape, color = getShapeAndColor(board, boxx, boxy)
+                drawIcon(shape, color, boxx, boxy)
 
 def makeTextObjs(text, font, color):
     surf = font.render(text, True, color)
@@ -333,7 +353,7 @@ def showTextScreen(text):
     DISPLAYSURF.blit(titleSurf, titleRect)
 
     # Draw the additional "Press a key to play." text.
-    pressKeySurf, pressKeyRect = makeTextObjs('Press a key to play.', BASICFONT, BLACK)
+    pressKeySurf, pressKeyRect = makeTextObjs('Press a key to play.', BASICFONT, WHITE)
     pressKeyRect.center = (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2) + 100)
     DISPLAYSURF.blit(pressKeySurf, pressKeyRect)
 
