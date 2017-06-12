@@ -538,12 +538,13 @@ def changemode(mousex,mousey): #모드 바꾸기 위한 버튼 제작?
         pygame.draw.rect(DISPLAYSURF, BLUE, (WINDOWWIDTH - 155, 200, 110, 50),5)
     if (mousex > WINDOWWIDTH - 155 and mousey > 280) and (mousex < WINDOWWIDTH - 45 and mousey < 330):
         pygame.draw.rect(DISPLAYSURF, BLUE, (WINDOWWIDTH - 155, 280, 110, 50),5)
+        while checkForKeyPress() == None:# 아무것도 안누르면 멈추어 있기 
+            pygame.display.update()
+            FPSCLOCK.tick()
+
     if (mousex > WINDOWWIDTH - 200 and mousey > 400) and (mousex < WINDOWWIDTH -30 and mousey < 450):
         pygame.draw.rect(DISPLAYSURF, RED, (WINDOWWIDTH - 200, 400, 170, 50),5)
-        showTextScreen("no")
-        lastFallTime = time.time()
-        lastMoveDownTime = time.time()
-        lastMoveSidewaysTime = time.time()    
+        showTextScreen("no!!!")   
 
 
 if __name__ == '__main__':
