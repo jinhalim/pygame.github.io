@@ -151,7 +151,8 @@ PIECES = {'S': S_SHAPE_TEMPLATE,
           'T': T_SHAPE_TEMPLATE}
 
 bg_image = pygame.image.load("bgimg.png")
-
+mousex = 0
+mousey = 0
 def main():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
     pygame.init()
@@ -186,8 +187,7 @@ def runGame():
     score = 0
     level, fallFreq = calculateLevelAndFallFreq(score)
 
-    mousex = 0
-    mousey = 0
+
 
 
     fallingPiece = getNewPiece()
@@ -297,6 +297,7 @@ def runGame():
         drawBoard(board)
         drawStatus(score, level)
         drawNextPiece(nextPiece)
+        changemode()
         if fallingPiece != None:
             drawPiece(fallingPiece)
 
@@ -514,13 +515,36 @@ def drawNextPiece(piece):
     # draw the "next" text
     nextSurf = BASICFONT.render('Next:', True, TEXTCOLOR)
     nextRect = nextSurf.get_rect()
-    nextRect.topleft = (WINDOWWIDTH - 120, 80)
+    nextRect.topleft = (WINDOWWIDTH - 150, 80)
     DISPLAYSURF.blit(nextSurf, nextRect)
     # draw the "next" piece
-    drawPiece(piece, pixelx=WINDOWWIDTH-120, pixely=100)
+    drawPiece(piece, pixelx=WINDOWWIDTH-120, pixely=80)
 
-# def changemode(): 
+def changemode(): 
+    
+    mode1 = BASICFONT.render('Tetris', True, TEXTCOLOR)
+    modeRect1 = mode1.get_rect()
+    modeRect1.topleft = (WINDOWWIDTH - 125, 215)
+    DISPLAYSURF.blit(mode1, modeRect1)
+    
+    mode2 = BASICFONT.render('Shooting', True, TEXTCOLOR)
+    modeRect2 = mode2.get_rect()
+    modeRect2.topleft = (WINDOWWIDTH - 140, 295)
+    DISPLAYSURF.blit(mode2, modeRect2)
 
+    if inarea(WINDOWWIDTH - 155, 200, 110, 50):
+        pygame.draw.rect(DISPLAYSURF, BLUE, (WINDOWWIDTH - 155, 200, 110, 50),5)# 1사각형을 그린다 (왼쪽, 위, 너비, 높이 순)
+    elif inarea(WINDOWWIDTH - 155, 200, 110, 50):    
+        pygame.draw.rect(DISPLAYSURF, BLUE, (WINDOWWIDTH - 155, 200, 110, 50),5)# 2사각형을 그린다 (왼쪽, 위, 너비, 높이 순)
+
+def inarea(rectx, recty ,width ,height):
+    for x in range(rectx, rectx+width ):
+        for y in range(recty, recty+height):
+            if ((mousex >= 535) and (mousey >= 222)):
+                print("yes")
+                return True
+            else:
+                return False           
 
 if __name__ == '__main__':
     main()
