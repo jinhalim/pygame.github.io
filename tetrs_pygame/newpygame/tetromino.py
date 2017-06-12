@@ -151,8 +151,7 @@ PIECES = {'S': S_SHAPE_TEMPLATE,
           'T': T_SHAPE_TEMPLATE}
 
 bg_image = pygame.image.load("bgimg.png")
-mousex = 0
-mousey = 0
+
 def main():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
     pygame.init()
@@ -188,7 +187,8 @@ def runGame():
     level, fallFreq = calculateLevelAndFallFreq(score)
 
 
-
+    mousex = 0
+    mousey = 0
 
     fallingPiece = getNewPiece()
     nextPiece = getNewPiece()
@@ -205,7 +205,9 @@ def runGame():
                 return # can't fit a new piece on the board, so game over
         
         checkForQuit()
-        mouespos(mousex, mousey)
+        for event in pygame.event.get(MOUSEMOTION):
+            mousex, mousey = event.pos
+        
         for event in pygame.event.get(): # event handling loop
             if event.type == KEYUP:
                 if (event.key == K_p):
@@ -297,7 +299,7 @@ def runGame():
         drawBoard(board)
         drawStatus(score, level)
         drawNextPiece(nextPiece)
-        changemode()
+        changemode(mousex,mousey)
         if fallingPiece != None:
             drawPiece(fallingPiece)
 
@@ -373,10 +375,6 @@ def checkForQuit():
             terminate() # terminate if the KEYUP event was for the Esc key
         pygame.event.post(event) # put the other KEYUP event objects back
 
-def mouespos(mousex, mousey):
-    for event in pygame.event.get(MOUSEMOTION):
-        mousex, mousey = event.pos
-        print(mousex,mousey)
 
 def calculateLevelAndFallFreq(score):
     level = int(score / 10) + 1
@@ -498,7 +496,7 @@ def drawStatus(score, level):
     DISPLAYSURF.blit(levelSurf, levelRect)
 
 
-def drawPiece(piece, pixelx=None, pixely=None):
+def drawPiece(piece, pixelx=None, pixely=None):#퍼즐 만들기 
     shapeToDraw = PIECES[piece['shape']][piece['rotation']]
     if pixelx == None and pixely == None:
         # if pixelx & pixely hasn't been specified, use the location stored in the piece data structure
@@ -511,8 +509,7 @@ def drawPiece(piece, pixelx=None, pixely=None):
                 drawBox(None, None, piece['color'], pixelx + (x * BOXSIZE), pixely + (y * BOXSIZE))
 
 
-def drawNextPiece(piece):
-    # draw the "next" text
+def drawNextPiece(piece):# 다음 퍼즐 만들기 
     nextSurf = BASICFONT.render('Next:', True, TEXTCOLOR)
     nextRect = nextSurf.get_rect()
     nextRect.topleft = (WINDOWWIDTH - 150, 80)
@@ -520,8 +517,8 @@ def drawNextPiece(piece):
     # draw the "next" piece
     drawPiece(piece, pixelx=WINDOWWIDTH-120, pixely=80)
 
-def changemode(): 
-    
+def changemode(mousex,mousey): #모드 바꾸기 위한 버튼 제작?
+    LEFT = 1
     mode1 = BASICFONT.render('Tetris', True, TEXTCOLOR)
     modeRect1 = mode1.get_rect()
     modeRect1.topleft = (WINDOWWIDTH - 125, 215)
@@ -532,19 +529,22 @@ def changemode():
     modeRect2.topleft = (WINDOWWIDTH - 140, 295)
     DISPLAYSURF.blit(mode2, modeRect2)
 
-    if inarea(WINDOWWIDTH - 155, 200, 110, 50):
-        pygame.draw.rect(DISPLAYSURF, BLUE, (WINDOWWIDTH - 155, 200, 110, 50),5)# 1사각형을 그린다 (왼쪽, 위, 너비, 높이 순)
-    elif inarea(WINDOWWIDTH - 155, 200, 110, 50):    
-        pygame.draw.rect(DISPLAYSURF, BLUE, (WINDOWWIDTH - 155, 200, 110, 50),5)# 2사각형을 그린다 (왼쪽, 위, 너비, 높이 순)
+    no2 = BASICFONT.render("Don't on mouse", True, RED)
+    noRect2 = no2.get_rect()
+    noRect2.topleft = (WINDOWWIDTH - 190, 420)
+    DISPLAYSURF.blit(no2, noRect2)
 
-def inarea(rectx, recty ,width ,height):
-    for x in range(rectx, rectx+width ):
-        for y in range(recty, recty+height):
-            if ((mousex >= 535) and (mousey >= 222)):
-                print("yes")
-                return True
-            else:
-                return False           
+    if (mousex > WINDOWWIDTH - 155 and mousey > 200) and (mousex < WINDOWWIDTH - 45 and mousey < 250):
+        pygame.draw.rect(DISPLAYSURF, BLUE, (WINDOWWIDTH - 155, 200, 110, 50),5)
+    if (mousex > WINDOWWIDTH - 155 and mousey > 280) and (mousex < WINDOWWIDTH - 45 and mousey < 330):
+        pygame.draw.rect(DISPLAYSURF, BLUE, (WINDOWWIDTH - 155, 280, 110, 50),5)
+    if (mousex > WINDOWWIDTH - 200 and mousey > 400) and (mousex < WINDOWWIDTH -30 and mousey < 450):
+        pygame.draw.rect(DISPLAYSURF, RED, (WINDOWWIDTH - 200, 400, 170, 50),5)
+        showTextScreen("no")
+        lastFallTime = time.time()
+        lastMoveDownTime = time.time()
+        lastMoveSidewaysTime = time.time()    
+
 
 if __name__ == '__main__':
     main()
