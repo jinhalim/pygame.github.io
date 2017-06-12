@@ -159,9 +159,6 @@ def main():
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
     BIGFONT = pygame.font.Font('freesansbold.ttf', 100)
-    mousex = 0
-    mousey = 0
-    
     pygame.display.set_caption('Tetromino')
     DISPLAYSURF.blit(bg_image,[0,0])
     showTextScreen('Tetromino')
@@ -189,6 +186,10 @@ def runGame():
     score = 0
     level, fallFreq = calculateLevelAndFallFreq(score)
 
+    mousex = 0
+    mousey = 0
+
+
     fallingPiece = getNewPiece()
     nextPiece = getNewPiece()
     DISPLAYSURF.blit(bg_image,[0,0])
@@ -204,14 +205,15 @@ def runGame():
                 return # can't fit a new piece on the board, so game over
         
         checkForQuit()
+        mouespos(mousex, mousey)
         for event in pygame.event.get(): # event handling loop
             if event.type == KEYUP:
                 if (event.key == K_p):
                     # Pausing the game
                     
-                    pygame.mixer.music.stop()
+                    # pygame.mixer.music.stop()
                     showTextScreen('Paused') # pause until a key press
-                    pygame.mixer.music.play(-1, 0.0)
+                    # pygame.mixer.music.play(-1, 0.0)
                     lastFallTime = time.time()
                     lastMoveDownTime = time.time()
                     lastMoveSidewaysTime = time.time()
@@ -370,6 +372,10 @@ def checkForQuit():
             terminate() # terminate if the KEYUP event was for the Esc key
         pygame.event.post(event) # put the other KEYUP event objects back
 
+def mouespos(mousex, mousey):
+    for event in pygame.event.get(MOUSEMOTION):
+        mousex, mousey = event.pos
+        print(mousex,mousey)
 
 def calculateLevelAndFallFreq(score):
     level = int(score / 10) + 1
@@ -513,7 +519,8 @@ def drawNextPiece(piece):
     # draw the "next" piece
     drawPiece(piece, pixelx=WINDOWWIDTH-120, pixely=100)
 
-    
+# def changemode(): 
+
 
 if __name__ == '__main__':
     main()
