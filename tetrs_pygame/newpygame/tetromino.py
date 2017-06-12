@@ -6,7 +6,7 @@ WINDOWWIDTH = 640
 WINDOWHEIGHT = 480
 BOXSIZE = 20
 BOARDWIDTH = 10
-BOARDHEIGHT = 20
+BOARDHEIGHT = 23
 BLANK = '.'
 
 MOVESIDEWAYSFREQ = 0.15
@@ -28,8 +28,8 @@ LIGHTBLUE   = ( 20,  20, 175)
 YELLOW      = (155, 155,   0)
 LIGHTYELLOW = (175, 175,  20)
 
-BORDERCOLOR = BLUE
-BGCOLOR = GRAY
+BORDERCOLOR = LIGHTBLUE
+BGCOLOR = WHITE
 TEXTCOLOR = WHITE
 TEXTSHADOWCOLOR = BLACK
 COLORS      = (     BLUE,      GREEN,      RED,      YELLOW)
@@ -467,10 +467,10 @@ def drawBox(boxx, boxy, color, pixelx=None, pixely=None):
 
 def drawBoard(board):
     # draw the border around the board
-    pygame.draw.rect(DISPLAYSURF, BORDERCOLOR, (XMARGIN - 3, TOPMARGIN - 7, (BOARDWIDTH * BOXSIZE) + 8, (BOARDHEIGHT * BOXSIZE) + 8), 5)
+    pygame.draw.rect(DISPLAYSURF, BORDERCOLOR, (XMARGIN - 3, TOPMARGIN - 7, (BOARDWIDTH * BOXSIZE) + 7, (BOARDHEIGHT * BOXSIZE) + 8.5), 10)
 
     # fill the background of the board
-    pygame.draw.rect(DISPLAYSURF, BGCOLOR, (XMARGIN, TOPMARGIN, BOXSIZE * BOARDWIDTH, BOXSIZE * BOARDHEIGHT))
+    pygame.draw.rect(DISPLAYSURF, BGCOLOR, (XMARGIN, TOPMARGIN, (BOXSIZE * BOARDWIDTH)+1, BOXSIZE * BOARDHEIGHT))
     # draw the individual boxes on the board
     for x in range(BOARDWIDTH):
         for y in range(BOARDHEIGHT):
@@ -513,11 +513,7 @@ def drawNextPiece(piece):
     # draw the "next" piece
     drawPiece(piece, pixelx=WINDOWWIDTH-120, pixely=100)
 
+    
 
-def milivogi(piece):
-    pass
-
-def one_to_one():
-    pass
 if __name__ == '__main__':
     main()
