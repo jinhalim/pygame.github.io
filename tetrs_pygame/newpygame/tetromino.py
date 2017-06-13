@@ -163,6 +163,8 @@ start_img = pygame.image.load("start.png")
 meme = pygame.image.load("meme.gif")
 bu = pygame.image.load("bu.gif")
 ifk_p = False
+
+
 def main():
     global FPSCLOCK, screen, BASICFONT, BIGFONT
     pygame.init()
@@ -179,14 +181,15 @@ def main():
         # else:
         #     pygame.mixer.music.load('tetrisc.mid')
         # pygame.mixer.music.play(-1, 0.0)
-        tetrisGame()
+        board = getBlankBoard()#비어 있는 보드를 만든다.
+        tetrisGame(board)
         # pygame.mixer.music.stop()
         screen.blit(bg_image,[0,0])
         showTextScreen('Game Over',ifk_p)
 
 
-def tetrisGame():
-    board = getBlankBoard()#비어 있는 보드를 만든다.
+def tetrisGame(board):
+    
     lastMoveDownTime = time.time()
     lastMoveSidewaysTime = time.time()
     lastFallTime = time.time()
@@ -306,6 +309,39 @@ def tetrisGame():
 
         # drawing everything on the screen
         # screen.fill(BGCOLOR)
+        screen.blit(bg_image,[0,0])
+        screen.blit(start_img,[50,20])
+        drawBoard(board)
+        drawStatus(score, level)
+        drawNextPiece(nextPiece)
+        changemode(mousex,mousey)
+        if fallingPiece != None:
+            drawPiece(fallingPiece)
+
+        pygame.display.update()
+        FPSCLOCK.tick(FPS)
+
+def shootinggame(board):
+    score = 0
+    level, fallFreq = calculateLevelAndFallFreq(score)
+    mousex = 0
+    mousey = 0
+    fallingball = getNewball()
+    nextball = getNewball()
+    screen.blit(bg_image,[0,0])
+    # screen.fill(BGCOLOR)
+    while True: # game loop
+        checkForQuit()
+        for event in pygame.event.get(): # event handling loop
+            if event.type == KEYUP:
+                if event.key == K_SPACE:
+                    fallingball = getNewball()
+                    if isValidPosition():
+                        y = 0
+                        x = 0
+                        if (y >= 0) and(x >= 0) and(isComplete(board ,x ,y)):
+                            pass
+
         screen.blit(bg_image,[0,0])
         screen.blit(start_img,[50,20])
         drawBoard(board)
@@ -445,7 +481,7 @@ def isOnBoard(x, y):
 
 
 def isValidPosition(board, piece, adjX=0, adjY=0):
-    # Return True if the piece is within the board and not colliding
+    # 피스와 겹치는지 안겹치는지 확인(true:겹치지않을 시 , false: 겹칠 시)
     for x in range(TEMPLATEWIDTH):
         for y in range(TEMPLATEHEIGHT):
             isAboveBoard = y + piece['y'] + adjY < 0
@@ -464,17 +500,20 @@ def isCompleteLine(board, y):
             return False
     return True
 
-def isComplete(board, x, y):
-    # Return True if the line filled with boxes with no gaps.
-    for w in range(x,BOARDHEIGHT -1):
-        for s in range(y,BOARDWIDTH-1):
-            if board[w][s] == BLANK:
-                return False
-    return True
+def removeComplete(board,ball, adjX=0, adjY=0):#shooting 게임시 사용 
+    for x in range(TEMPLATEWIDTH):
+        for y in range(TEMPLATEHEIGHT):
+            sAboveBoard = y + BAllS['y'] + adjY < 0
+            if isAboveBoard or BAllS[ball['ball']][BAllS['rotation']][y][x] == BLANK:
+                continue
+            if not isOnBoard(x + BAllS['x'] + adjX, y + BAllS['y'] + adjY):#겹치는 순간 사라지기 
+                board[BAllS['x']][BAllS['y']] = BLANK
+            if board[x + BAllS['x'] + adjX][y + BAllS['y'] + adjY] != BLANK:#겹치는 순간 사라지기 
+                board[BAllS['x']][BAllS['y']] = BLANK
 
 
 def removeCompleteLines(board):
-    # Remove any completed lines on the board, move everything above them down, and return the number of complete lines.
+    # 완성된 줄은 없애고 다른 줄은 없앤다
     numLinesRemoved = 0
     y = BOARDHEIGHT - 1 # start y at the bottom of the board
     while y >= 0:
@@ -575,11 +614,11 @@ def changemode(mousex,mousey): #모드 바꾸기 위한 버튼 제작?
     if (mousex > WINDOWWIDTH - 155 and mousey > 200) and (mousex < WINDOWWIDTH - 45 and mousey < 250):
         pygame.draw.rect(screen, BLUE, (WINDOWWIDTH - 155, 200, 110, 50),5)
         screen.blit(meme,[100,60])
-    if (mousex > WINDOWWIDTH - 155 and mousey > 280) and (mousex < WINDOWWIDTH - 45 and mousey < 330):
+    if (mousex > WINDOWWIDTH - 155 and mousey > 280) and (mousex < WINDOWWIDTH - 45 and mousey < 330) :
         pygame.draw.rect(screen, BLUE, (WINDOWWIDTH - 155, 280, 110, 50),5)
-        while checkForKeyPress() == None:# 아무것도 안누르면 멈추어 있기 
-            pygame.display.update()
-            FPSCLOCK.tick()
+        for event in pygame.event.get(MOUSEBUTTONDOWN):# shooting 클릭시  shootinggame 시작 
+            if event.button == left:
+                shootinggame()
 
     #강제종료
     if (mousex > WINDOWWIDTH - 200 and mousey > 400) and (mousex < WINDOWWIDTH -30 and mousey < 450):
@@ -596,21 +635,7 @@ def getNewball():
                 'color': random.randint(0, len(COLORS)-1)}
     return newball    
 
-def shootinggame():
-    while True: # game loop
-        fallingball = getNewball()
-        checkForQuit()
-        for event in pygame.event.get(): # event handling loop
-            if event.type == KEYUP:
-                if event.key == K_SPACE:
-                    fallingball = getNewball()
-                    if isValidPosition():
-                        y = 0
-                        x = 0
-                        if (y >= 0) and(x >= 0) and(isComplete(board ,x ,y)):
-                            pass
 
-                    
     
 if __name__ == '__main__':
     main()
