@@ -142,6 +142,13 @@ T_SHAPE_TEMPLATE = [['.....',
                      '.....']]
                      
 
+BALL = [['.....',
+         '.....',
+         '.O...',
+         '.....',
+         '.....']]    
+BAllS = {'BALL','BALL','BALL','BALL','BALL'}                 
+
 PIECES = {'S': S_SHAPE_TEMPLATE,
           'Z': Z_SHAPE_TEMPLATE,
           'J': J_SHAPE_TEMPLATE,
@@ -151,32 +158,35 @@ PIECES = {'S': S_SHAPE_TEMPLATE,
           'T': T_SHAPE_TEMPLATE}
 
 bg_image = pygame.image.load("bgimg.png")
-
+Pause_img = pygame.image.load("Pause.png")
+start_img = pygame.image.load("start.png")
+meme = pygame.image.load("meme.gif")
+bu = pygame.image.load("bu.gif")
+ifk_p = False
 def main():
-    global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
+    global FPSCLOCK, screen, BASICFONT, BIGFONT
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
-    DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
+    screen = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
     BIGFONT = pygame.font.Font('freesansbold.ttf', 100)
     pygame.display.set_caption('Tetromino')
-    DISPLAYSURF.blit(bg_image,[0,0])
-    showTextScreen('Tetromino')
+    screen.blit(bg_image,[0,0])
+    showTextScreen('Tetromino',ifk_p)
     while True: # game loop
         # if random.randint(0, 1) == 0:
         #     pygame.mixer.music.load('tetrisb.mid')
         # else:
         #     pygame.mixer.music.load('tetrisc.mid')
         # pygame.mixer.music.play(-1, 0.0)
-        runGame()
+        tetrisGame()
         # pygame.mixer.music.stop()
-        DISPLAYSURF.blit(bg_image,[0,0])
-        showTextScreen('Game Over')
+        screen.blit(bg_image,[0,0])
+        showTextScreen('Game Over',ifk_p)
 
 
-def runGame():
-    # setup variables for the start of the game
-    board = getBlankBoard()
+def tetrisGame():
+    board = getBlankBoard()#비어 있는 보드를 만든다.
     lastMoveDownTime = time.time()
     lastMoveSidewaysTime = time.time()
     lastFallTime = time.time()
@@ -192,8 +202,9 @@ def runGame():
 
     fallingPiece = getNewPiece()
     nextPiece = getNewPiece()
-    DISPLAYSURF.blit(bg_image,[0,0])
-    # DISPLAYSURF.fill(BGCOLOR)
+    screen.blit(bg_image,[0,0])
+    
+    # screen.fill(BGCOLOR)
     while True: # game loop
         if fallingPiece == None:
             # No falling piece in play, so start a new piece at the top
@@ -205,17 +216,17 @@ def runGame():
                 return # can't fit a new piece on the board, so game over
         
         checkForQuit()
-        for event in pygame.event.get(MOUSEMOTION):
-            mousex, mousey = event.pos
         
         for event in pygame.event.get(): # event handling loop
-            if event.type == KEYUP:
+            if event.type == MOUSEMOTION:
+                mousex, mousey = event.pos
+            elif event.type == KEYUP:
                 if (event.key == K_p):
-                    # Pausing the game
-                    
+                    ifk_p = True
                     # pygame.mixer.music.stop()
-                    showTextScreen('Paused') # pause until a key press
+                    showTextScreen('Paused', ifk_p) # pause until a key press
                     # pygame.mixer.music.play(-1, 0.0)
+                    ifk_p = False
                     lastFallTime = time.time()
                     lastMoveDownTime = time.time()
                     lastMoveSidewaysTime = time.time()
@@ -279,11 +290,11 @@ def runGame():
             fallingPiece['y'] += 1
             lastMoveDownTime = time.time()
 
-        # let the piece fall if it is time to fall
+        # 떨어진 시간이 되면 피스를 떨어뜨린다. 
         if time.time() - lastFallTime > fallFreq:
-            # see if the piece has landed
+            #피스착지했는지 검사 
             if not isValidPosition(board, fallingPiece, adjY=1):
-                # falling piece has landed, set it on the board
+                # 착지 했다면 보드에 두기 
                 addToBoard(board, fallingPiece)
                 score += removeCompleteLines(board)
                 level, fallFreq = calculateLevelAndFallFreq(score)
@@ -294,8 +305,9 @@ def runGame():
                 lastFallTime = time.time()
 
         # drawing everything on the screen
-        # DISPLAYSURF.fill(BGCOLOR)
-        DISPLAYSURF.blit(bg_image,[0,0])
+        # screen.fill(BGCOLOR)
+        screen.blit(bg_image,[0,0])
+        screen.blit(start_img,[50,20])
         drawBoard(board)
         drawStatus(score, level)
         drawNextPiece(nextPiece)
@@ -317,7 +329,7 @@ def drawBoard(board, revealed):
         for boxy in range(BOARDHEIGHT):
             left, top = leftTopCoordsOfBox(boxx, boxy)
             if not revealed[boxx][boxy]:
-                pygame.draw.rect(DISPLAYSURF, BOXCOLOR, (left, top, BOXSIZE, BOXSIZE))
+                pygame.draw.rect(screen, BOXCOLOR, (left, top, BOXSIZE, BOXSIZE))
             else:
                 shape, color = getShapeAndColor(board, boxx, boxy)
                 drawIcon(shape, color, boxx, boxy)
@@ -327,7 +339,7 @@ def makeTextObjs(text, font, color):
     return surf, surf.get_rect()
 
 
-def terminate():
+def terminate():#창닫기 
     pygame.quit()
     sys.exit()
 
@@ -344,28 +356,46 @@ def checkForKeyPress():
     return None
 
 
-def showTextScreen(text):
+def showTextScreen(text , k_p):
     # This function displays large text in the
     # center of the screen until a key is pressed.
     # Draw the text drop shadow
     titleSurf, titleRect = makeTextObjs(text, BIGFONT, TEXTSHADOWCOLOR)
     titleRect.center = (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2))
-    DISPLAYSURF.blit(titleSurf, titleRect)
+    screen.blit(titleSurf, titleRect)
 
     # Draw the text
     titleSurf, titleRect = makeTextObjs(text, BIGFONT, TEXTCOLOR)
     titleRect.center = (int(WINDOWWIDTH / 2) - 3, int(WINDOWHEIGHT / 2) - 3)
-    DISPLAYSURF.blit(titleSurf, titleRect)
+    screen.blit(titleSurf, titleRect)
 
     # Draw the additional "Press a key to play." text.
     pressKeySurf, pressKeyRect = makeTextObjs('Press a key to play.', BASICFONT, WHITE)
     pressKeyRect.center = (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2) + 100)
-    DISPLAYSURF.blit(pressKeySurf, pressKeyRect)
+    screen.blit(pressKeySurf, pressKeyRect)
 
     while checkForKeyPress() == None:
+        if k_p == True:
+            screen.blit(Pause_img,[50,20])
         pygame.display.update()
         FPSCLOCK.tick()
 
+
+def normalshowTextScreen(text):
+    Self_destructiveness = 0
+    titleSurf, titleRect = makeTextObjs(text, BIGFONT, TEXTSHADOWCOLOR)
+    titleRect.center = (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2))
+    screen.blit(titleSurf, titleRect)
+
+    # Draw the text
+    titleSurf, titleRect = makeTextObjs(text, BIGFONT, TEXTCOLOR)
+    titleRect.center = (int(WINDOWWIDTH / 2) - 3, int(WINDOWHEIGHT / 2) - 3)
+    screen.blit(titleSurf, titleRect)
+
+    while Self_destructiveness < 200:
+        Self_destructiveness += 1
+        pygame.display.update()
+        FPSCLOCK.tick()
 
 def checkForQuit():
     for event in pygame.event.get(QUIT): # get all the QUIT events
@@ -395,7 +425,7 @@ def getNewPiece():
 
 
 def addToBoard(board, piece):
-    # fill in the board based on piece's location, shape, and rotation
+    # 떨어진 피스 포함해서 보드를 구성 
     for x in range(TEMPLATEWIDTH):
         for y in range(TEMPLATEHEIGHT):
             if PIECES[piece['shape']][piece['rotation']][y][x] != BLANK:
@@ -434,6 +464,14 @@ def isCompleteLine(board, y):
             return False
     return True
 
+def isComplete(board, x, y):
+    # Return True if the line filled with boxes with no gaps.
+    for w in range(x,BOARDHEIGHT -1):
+        for s in range(y,BOARDWIDTH-1):
+            if board[w][s] == BLANK:
+                return False
+    return True
+
 
 def removeCompleteLines(board):
     # Remove any completed lines on the board, move everything above them down, and return the number of complete lines.
@@ -466,16 +504,16 @@ def drawBox(boxx, boxy, color, pixelx=None, pixely=None):
         return
     if pixelx == None and pixely == None:
         pixelx, pixely = convertToPixelCoords(boxx, boxy)
-    pygame.draw.rect(DISPLAYSURF, COLORS[color], (pixelx + 1, pixely + 1, BOXSIZE - 1, BOXSIZE - 1))
-    pygame.draw.rect(DISPLAYSURF, LIGHTCOLORS[color], (pixelx + 1, pixely + 1, BOXSIZE - 4, BOXSIZE - 4))
+    pygame.draw.rect(screen, COLORS[color], (pixelx + 1, pixely + 1, BOXSIZE - 1, BOXSIZE - 1))
+    pygame.draw.rect(screen, LIGHTCOLORS[color], (pixelx + 1, pixely + 1, BOXSIZE - 4, BOXSIZE - 4))
 
 
 def drawBoard(board):
     # draw the border around the board
-    pygame.draw.rect(DISPLAYSURF, BORDERCOLOR, (XMARGIN - 3, TOPMARGIN - 7, (BOARDWIDTH * BOXSIZE) + 7, (BOARDHEIGHT * BOXSIZE) + 8.5), 10)
+    pygame.draw.rect(screen, BORDERCOLOR, (XMARGIN - 3, TOPMARGIN - 7, (BOARDWIDTH * BOXSIZE) + 7, (BOARDHEIGHT * BOXSIZE) + 8.5), 10)
 
     # fill the background of the board
-    pygame.draw.rect(DISPLAYSURF, BGCOLOR, (XMARGIN, TOPMARGIN, (BOXSIZE * BOARDWIDTH)+1, BOXSIZE * BOARDHEIGHT))
+    pygame.draw.rect(screen, BGCOLOR, (XMARGIN, TOPMARGIN, (BOXSIZE * BOARDWIDTH)+1, BOXSIZE * BOARDHEIGHT))
     # draw the individual boxes on the board
     for x in range(BOARDWIDTH):
         for y in range(BOARDHEIGHT):
@@ -487,13 +525,13 @@ def drawStatus(score, level):
     scoreSurf = BASICFONT.render('Score: %s' % score, True, TEXTCOLOR)
     scoreRect = scoreSurf.get_rect()
     scoreRect.topleft = (WINDOWWIDTH - 150, 20)
-    DISPLAYSURF.blit(scoreSurf, scoreRect)
+    screen.blit(scoreSurf, scoreRect)
 
     # draw the level text
     levelSurf = BASICFONT.render('Level: %s' % level, True, TEXTCOLOR)
     levelRect = levelSurf.get_rect()
     levelRect.topleft = (WINDOWWIDTH - 150, 50)
-    DISPLAYSURF.blit(levelSurf, levelRect)
+    screen.blit(levelSurf, levelRect)
 
 
 def drawPiece(piece, pixelx=None, pixely=None):#퍼즐 만들기 
@@ -513,7 +551,7 @@ def drawNextPiece(piece):# 다음 퍼즐 만들기
     nextSurf = BASICFONT.render('Next:', True, TEXTCOLOR)
     nextRect = nextSurf.get_rect()
     nextRect.topleft = (WINDOWWIDTH - 150, 80)
-    DISPLAYSURF.blit(nextSurf, nextRect)
+    screen.blit(nextSurf, nextRect)
     # draw the "next" piece
     drawPiece(piece, pixelx=WINDOWWIDTH-120, pixely=80)
 
@@ -522,30 +560,57 @@ def changemode(mousex,mousey): #모드 바꾸기 위한 버튼 제작?
     mode1 = BASICFONT.render('Tetris', True, TEXTCOLOR)
     modeRect1 = mode1.get_rect()
     modeRect1.topleft = (WINDOWWIDTH - 125, 215)
-    DISPLAYSURF.blit(mode1, modeRect1)
+    screen.blit(mode1, modeRect1)
     
     mode2 = BASICFONT.render('Shooting', True, TEXTCOLOR)
     modeRect2 = mode2.get_rect()
     modeRect2.topleft = (WINDOWWIDTH - 140, 295)
-    DISPLAYSURF.blit(mode2, modeRect2)
+    screen.blit(mode2, modeRect2)
 
     no2 = BASICFONT.render("Don't on mouse", True, RED)
     noRect2 = no2.get_rect()
     noRect2.topleft = (WINDOWWIDTH - 190, 420)
-    DISPLAYSURF.blit(no2, noRect2)
+    screen.blit(no2, noRect2)
 
     if (mousex > WINDOWWIDTH - 155 and mousey > 200) and (mousex < WINDOWWIDTH - 45 and mousey < 250):
-        pygame.draw.rect(DISPLAYSURF, BLUE, (WINDOWWIDTH - 155, 200, 110, 50),5)
+        pygame.draw.rect(screen, BLUE, (WINDOWWIDTH - 155, 200, 110, 50),5)
+        screen.blit(meme,[100,60])
     if (mousex > WINDOWWIDTH - 155 and mousey > 280) and (mousex < WINDOWWIDTH - 45 and mousey < 330):
-        pygame.draw.rect(DISPLAYSURF, BLUE, (WINDOWWIDTH - 155, 280, 110, 50),5)
+        pygame.draw.rect(screen, BLUE, (WINDOWWIDTH - 155, 280, 110, 50),5)
         while checkForKeyPress() == None:# 아무것도 안누르면 멈추어 있기 
             pygame.display.update()
             FPSCLOCK.tick()
 
+    #강제종료
     if (mousex > WINDOWWIDTH - 200 and mousey > 400) and (mousex < WINDOWWIDTH -30 and mousey < 450):
-        pygame.draw.rect(DISPLAYSURF, RED, (WINDOWWIDTH - 200, 400, 170, 50),5)
-        showTextScreen("no!!!")   
+        pygame.draw.rect(screen, RED, (WINDOWWIDTH - 200, 400, 170, 50),5)
+        normalshowTextScreen('NO!!!!')
+        terminate()
 
 
+def getNewball():
+    newball = {'ball': ball,
+                'rotation': random.randint(0, len(BAllS[ball]) - 1),
+                'x': int(BOARDWIDTH / 2) - int(TEMPLATEWIDTH / 2),
+                'y': -2, # start it above the board (i.e. less than 0)
+                'color': random.randint(0, len(COLORS)-1)}
+    return newball    
+
+def shootinggame():
+    while True: # game loop
+        fallingball = getNewball()
+        checkForQuit()
+        for event in pygame.event.get(): # event handling loop
+            if event.type == KEYUP:
+                if event.key == K_SPACE:
+                    fallingball = getNewball()
+                    if isValidPosition():
+                        y = 0
+                        x = 0
+                        if (y >= 0) and(x >= 0) and(isComplete(board ,x ,y)):
+                            pass
+
+                    
+    
 if __name__ == '__main__':
     main()
