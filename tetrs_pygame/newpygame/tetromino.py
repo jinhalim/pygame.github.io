@@ -142,14 +142,6 @@ T_SHAPE_TEMPLATE = [['.....',
                      '.....']]
                      
 
-BALL = [['.....',
-         '..O..',
-         '.OOO.',
-         '..O..',
-         '.....']]
-# BAllS = {'BALL':1,'BALL':2,'BALL':3,'BALL':4,'BALL':5}   
-BALLS = {'ball': BALL}              
-
 PIECES = {'S': S_SHAPE_TEMPLATE,
           'Z': Z_SHAPE_TEMPLATE,
           'J': J_SHAPE_TEMPLATE,
@@ -200,7 +192,7 @@ def tetrisGame(board):
     movingRight = False
     score = 0
     level, fallFreq = calculateLevelAndFallFreq(score)
-    ck = True
+    ck =  True
 
 
     mousex = 0
@@ -216,6 +208,7 @@ def tetrisGame(board):
     screen.blit(bg_image,[0,0])
     # screen.fill(BGCOLOR)
     while True: # game loop
+        print(ck)
         if ck == False:
             
             if fallingPiece == None:
@@ -390,7 +383,7 @@ def tetrisGame(board):
         screen.blit(start_img,[50,20])
         drawBoard(board)
         drawStatus(score, level)
-        changemode(mousex,mousey ,ck)
+        ck = changemode(mousex,mousey,ck)
         drawNextPiece(nextPiece)
         if fallingPiece != None:
             drawPiece(fallingPiece)
@@ -474,6 +467,7 @@ def normalshowTextScreen(text):
 
     while Self_destructiveness < 200:
         Self_destructiveness += 1
+        print(Self_destructiveness)
         pygame.display.update()
         FPSCLOCK.tick()
 
@@ -666,6 +660,8 @@ def changemode(mousex,mousey,ck): #모드 바꾸기 위한 버튼 제작?
             if event.button == LEFT:
                 ck = False
                 print("no")
+                return ck
+                
 
     if (mousex > WINDOWWIDTH - 155 and mousey > 280) and (mousex < WINDOWWIDTH - 45 and mousey < 330) :
         pygame.draw.rect(screen, BLUE, (WINDOWWIDTH - 155, 280, 110, 50),5)
@@ -673,12 +669,14 @@ def changemode(mousex,mousey,ck): #모드 바꾸기 위한 버튼 제작?
             if event.button == LEFT:
                 ck = True
                 print("yes")
+                return ck    
 
     #강제종료
     if (mousex > WINDOWWIDTH - 200 and mousey > 400) and (mousex < WINDOWWIDTH -30 and mousey < 450):
         pygame.draw.rect(screen, RED, (WINDOWWIDTH - 200, 400, 170, 50),5)
         normalshowTextScreen('NO!!!!')
         terminate()
+    return ck    
 
 def getNewPieceO():
     shape = 'O'
