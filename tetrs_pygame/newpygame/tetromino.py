@@ -166,9 +166,9 @@ def main():
     screen = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
     BIGFONT = pygame.font.Font('freesansbold.ttf', 100)
-    pygame.display.set_caption('Tetromino')
+    pygame.display.set_caption('Tetris_진하림')
     screen.blit(bg_image,[0,0])
-    showTextScreen('Tetromino',ifk_p)
+    showTextScreen('Tetris',ifk_p)
     while True: # game loop
         # if random.randint(0, 1) == 0:
         #     pygame.mixer.music.load('tetrisb.mid')
@@ -311,8 +311,17 @@ def tetrisGame(board):
                     lastFallTime = time.time()
 
         if ck == True:
+            if fallingPiece == None:
+                fallingPiece = nextPiece
+                nextPiece = getNewPieceO()
+                lastFallTime = time.time() 
+
+                if not isValidPosition(board, fallingPiece):
+                    return
+            
             checkForQuit()
-            for event in pygame.event.get(): # event handling loop
+            
+            for event in pygame.event.get(): 
                 if event.type == MOUSEMOTION:
                     mousex, mousey = event.pos
                 elif event.type == KEYUP:
@@ -324,10 +333,15 @@ def tetrisGame(board):
                         ifk_p = False
                         lastFallTime = time.time()
                         lastMoveDownTime = time.time()
-                        lastMoveSidewaysTime = time.time()  
-                    if (event.key == K_SPACE):
-                        fallingPiece = getNewPieceO()
-                        removeComplete(board , fallingPiece)   
+                        lastMoveSidewaysTime = time.time()
+                    elif (event.key == K_LEFT or event.key == K_a):
+                        movingLeft = False
+                    elif (event.key == K_RIGHT or event.key == K_d):
+                        movingRight = False
+                    elif (event.key == K_DOWN or event.key == K_s):
+                        movingDown = False
+
+
                 elif event.type == KEYDOWN:
                     # moving the piece sideways
                     if (event.key == K_LEFT or event.key == K_a) and isValidPosition(board, fallingPiece, adjX=-1):
@@ -342,13 +356,32 @@ def tetrisGame(board):
                         movingLeft = False
                         lastMoveSidewaysTime = time.time()
 
+                    # rotating the piece (if there is room to rotate)
+                    elif (event.key == K_UP or event.key == K_w):
+                        fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(PIECES[fallingPiece['shape']])
+                        if not isValidPosition(board, fallingPiece):
+                            fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
+                    elif (event.key == K_q): # rotate the other direction
+                        fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
+                        if not isValidPosition(board, fallingPiece):
+                            fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(PIECES[fallingPiece['shape']])
+
+                    # making the piece fall faster with the down key
+                    elif (event.key == K_DOWN or event.key == K_s):
+                        movingDown = True
+                        if isValidPosition(board, fallingPiece, adjY=1):
+                            fallingPiece['y'] += 1
+                        lastMoveDownTime = time.time()
 
                     # move the current piece all the way down
                     elif event.key == K_SPACE:
                         movingDown = False
                         movingLeft = False
                         movingRight = False
-                        
+                        for i in range(1, BOARDHEIGHT):
+                            if not isValidPosition(board, fallingPiece, adjY=i):
+                                break
+                        fallingPiece['y'] += i - 1
 
             # handle moving the piece because of user input
             if (movingLeft or movingRight) and time.time() - lastMoveSidewaysTime > MOVESIDEWAYSFREQ:
@@ -358,7 +391,7 @@ def tetrisGame(board):
                     fallingPiece['x'] += 1
                 lastMoveSidewaysTime = time.time()
 
-            if movingDown and time.time() - lastMoveDownTime > MOVEDOWNFREQ and isValidPosition(board, fallingPiece, adjY=1 ):
+            if movingDown and time.time() - lastMoveDownTime > MOVEDOWNFREQ and isValidPosition(board, fallingPiece, adjY=1):
                 fallingPiece['y'] += 1
                 lastMoveDownTime = time.time()
 
@@ -367,14 +400,26 @@ def tetrisGame(board):
                 #피스착지했는지 검사 
                 if not isValidPosition(board, fallingPiece, adjY=1):
                     # 착지 했다면 보드에 두기 
-                    addToBoard(board, fallingPiece)
                     score += removeCompleteLines(board)
                     level, fallFreq = calculateLevelAndFallFreq(score)
                     fallingPiece = None
                 else:
                     # piece did not land, just move the piece down
                     fallingPiece['y'] += 1
-                    lastFallTime = time.time()       
+                    lastFallTime = time.time()
+            # # 떨어진 시간이 되면 피스를 떨어뜨린다. 
+            # if time.time() - lastFallTime > fallFreq:
+            #     #피스착지했는지 검사 
+            #     if not isValidPosition(board, fallingPiece, adjY=1):
+            #         # 착지 했다면 보드에 두기 
+            #         addToBoard(board, fallingPiece)
+            #         score += removeCompleteLines(board)
+            #         level, fallFreq = calculateLevelAndFallFreq(score)
+            #         fallingPiece = None
+            #     else:
+            #         # piece did not land, just move the piece down
+            #         fallingPiece['y'] += 1
+            #         lastFallTime = time.time()     
                         
 
         # drawing everything on the screen
@@ -685,6 +730,7 @@ def getNewPieceO():
                 'x': int(BOARDWIDTH / 2) - int(TEMPLATEWIDTH / 2),
                 'y': -2, # start it above the board (i.e. less than 0)
                 'color': random.randint(0, len(COLORS)-1)}
+    print(newPiece)
     return newPiece
 
 
