@@ -220,7 +220,6 @@ def tetrisGame(board):
     while True: # game loop
         print(ck)
         if ck == False:
-            
             if fallingPiece == None:
                 # No falling piece in play, so start a new piece at the top
                 fallingPiece = nextPiece
@@ -271,10 +270,6 @@ def tetrisGame(board):
                         fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(PIECES[fallingPiece['shape']])
                         if not isValidPosition(board, fallingPiece):
                             fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
-                    elif (event.key == K_q): # rotate the other direction
-                        fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
-                        if not isValidPosition(board, fallingPiece):
-                            fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(PIECES[fallingPiece['shape']])
 
                     # making the piece fall faster with the down key
                     elif (event.key == K_DOWN or event.key == K_s):
@@ -679,6 +674,7 @@ def changemode(mousex,mousey,ck): #모드 바꾸기 위한 버튼 제작?
 
     if (mousex > WINDOWWIDTH - 155 and mousey > 280) and (mousex < WINDOWWIDTH - 45 and mousey < 330) :
         pygame.draw.rect(screen, BLUE, (WINDOWWIDTH - 155, 280, 110, 50),5)
+        screen.blit(bu,[100,60])
         for event in pygame.event.get(MOUSEBUTTONDOWN):# shooting 클릭시  shootinggame 시작 
             if event.button == LEFT:
                 ck = True
@@ -698,7 +694,6 @@ def getNewPieceO(mousex,mousey):
                 'x': int(mousex),
                 'y': -2, # start it above the board (i.e. less than 0)
                 'color': random.randint(0, len(COLORS)-1)}
-    print(newPiece)
     return newPiece
     
 if __name__ == '__main__':
